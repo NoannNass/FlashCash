@@ -1,40 +1,55 @@
 package com.app.flashcash.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import com.app.flashcash.entity.Transaction;
+
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class User {
-
-
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    private String name;
+    @Column(unique = true, nullable = false)
     private String email;
+
+    @Column(nullable = false)
     private String password;
-    private String phone;
 
-    public User() {
-    }
+    private String firstName;
+    private String lastName;
 
-    public User(Long id, String name, String email, String password, String phone) {
-        this.id = id;
-        this.name = name;
-        this.email = email;
-        this.password = password;
-        this.phone = phone;
-    }
+    @Column(precision = 10, scale = 2)
+    private BigDecimal balance;
+
+    @ManyToMany
+    @JoinTable(
+            name = "connections",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "connection_id")
+    )
+    private Set<User> connections = new HashSet<>();
+
+    @OneToMany(mappedBy = "sender")
+    private List<Transaction> sentTransactions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "receiver")
+    private List<Transaction> receivedTransactions = new ArrayList<>();
 
 
 }
