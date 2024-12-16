@@ -35,7 +35,7 @@ public class User {
     private String lastName;
 
     @Column(precision = 10, scale = 2)
-    private BigDecimal balance;
+    private BigDecimal balance;//BigDecimal pour des calculs plus précis -> BigDecimal mieux que double
 
     @ManyToMany
     @JoinTable(
