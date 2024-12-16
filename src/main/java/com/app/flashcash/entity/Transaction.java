@@ -23,12 +23,12 @@ public class Transaction {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "sender_id", nullable = false)//Clé étrangère obligatoire
-    private User sender;
+    @JoinColumn(name = "sender_account_id", nullable = false)//Clé étrangère obligatoire
+    private Account senderAccount; // compte émetteur
 
     @ManyToOne
-    @JoinColumn(name = "receiver_id", nullable = false)//Clé étrangère obligatoire
-    private User receiver;
+    @JoinColumn(name = "receiver_account_id", nullable = false)//Clé étrangère obligatoire
+    private Account receiverAccount; // compte receveur
 
     @Column(precision = 10, scale = 2, nullable = false)//Clé étrangère obligatoire
     private BigDecimal amount;
@@ -61,6 +61,14 @@ public enum TransactionType {
         COMPLETED,
         FAILED
     }
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private String currency;
+
+    public enum Currency {
+        Dollar, Euro, Pound, Yen
+    }
+
 
     @CreationTimestamp //création automatique d'un horodatage
     private LocalDateTime createdAt;

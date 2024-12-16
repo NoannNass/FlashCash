@@ -51,6 +51,9 @@ public class User {
     @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Transaction> receivedTransactions = new ArrayList<>();
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Account> accounts = new ArrayList<>(); // chaque utilisateur peut avoir plusieurs compte
+
     //mis à jour du solde
     public void updateBalance(BigDecimal amount) {
         if (this.balance == null) {
