@@ -30,6 +30,14 @@ public class Transaction {
     @JoinColumn(name = "receiver_account_id", nullable = false)//Clé étrangère obligatoire
     private Account receiverAccount; // compte receveur
 
+    @ManyToOne
+    @JoinColumn(name = "sender_id", referencedColumnName = "id") // la clé étrangère dans la table
+    private User sender;
+
+    @ManyToOne
+    @JoinColumn(name = "receiver_id", referencedColumnName = "id") // Relation pour le destinataire
+    private User receiver;
+
     @Column(precision = 10, scale = 2, nullable = false)//Clé étrangère obligatoire
     private BigDecimal amount;
 
@@ -62,8 +70,7 @@ public enum TransactionType {
         FAILED
     }
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private String currency;
+    private Currency currency;
 
     public enum Currency {
         Dollar, Euro, Pound, Yen

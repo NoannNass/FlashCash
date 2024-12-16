@@ -25,6 +25,9 @@ public class Account {
     @Column(unique = true, nullable = false)
    private String accountNumber;
 
+    @Column(unique = true, nullable = false, length = 34)
+    private String iban; // IBAN unique lié à ce compte (max 34 caractères)
+
 
     @Column(precision = 10, scale = 2, nullable = false)
     private BigDecimal balance = BigDecimal.ZERO; // Solde intitial par défaut
@@ -38,6 +41,12 @@ public class Account {
 
     @OneToMany(mappedBy = "receiverAccount", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Transaction> receivedTransactions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "sourceAccount", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Friendship> friendships = new ArrayList<>();
+
+    @OneToMany(mappedBy = "friendAccount", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Friendship> inverseFriendships = new ArrayList<>();
 
     // Méthode utilitaire pour mettre à jour le solde
     public void updateBalance(BigDecimal amount) {
