@@ -34,22 +34,30 @@ public class User {
     private String firstName;
     private String lastName;
 
-    @Column(precision = 10, scale = 2)
-    private BigDecimal balance;//BigDecimal pour des calculs plus précis -> BigDecimal mieux que double
+    @Column(precision = 10, scale = 2, nullable = false)
+    private BigDecimal balance = BigDecimal.ZERO; //Initialisation pour éviter null lors des calculs //BigDecimal pour des calculs plus précis -> BigDecimal mieux que double
 
     @ManyToMany
     @JoinTable(
-            name = "connections",
+            name = "connections", // table intermédiaire
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "connection_id")
     )
-    private Set<User> connections = new HashSet<>();
+    private Set<User> connections = new HashSet<>(); // HashSet pour éviter les doublons (si y a les mêmes noms etc
 
-    @OneToMany(mappedBy = "sender")
+    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true) // Cascade pour que les transactions soient mises à jour en fonction des utilisateurs // ophran pour supprimer les transactions non associé à un utilisateur
     private List<Transaction> sentTransactions = new ArrayList<>();
 
-    @OneToMany(mappedBy = "receiver")
+    @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Transaction> receivedTransactions = new ArrayList<>();
+
+    //mis à jour du solde
+    public void updateBalance(BigDecimal amount) {
+        if (this.balance == null) {
+            this.balance = BigDecimal.ZERO;
+        }
+        this.balance = this.balance.add(amount);
+    }
 
 
 }
