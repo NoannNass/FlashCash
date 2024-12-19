@@ -1,0 +1,76 @@
+/* Section de bienvenue */
+.welcome-section {
+    background: linear-gradient(135deg, var(--primary-color) 0%, #0056b3 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 0.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Cards des comptes */
+.account-card {
+    transition: transform 0.2s;
+}
+
+.account-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15);
+}
+
+.balance-amount {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+/* Section des transactions */
+.transaction-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.transaction-item {
+    padding: 0.75rem;
+    border-bottom: 1px solid rgba(0,0,0,.05);
+}
+
+.transaction-item:last-child {
+    border-bottom: none;
+}
+
+.transaction-amount.debit {
+    color: var(--danger-color);
+}
+
+.transaction-amount.credit {
+    color: var(--success-color);
+}
+
+/* Badges de statut */
+.status-badge {
+    padding: 0.35rem 0.65rem;
+    border-radius: 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.status-completed {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-pending {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+
+    .welcome-section {
+        padding: 1.5rem;
+    }
+}

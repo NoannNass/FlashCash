@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flash Cash - Friends Management</title>
+  <!-- Les chemins CSS restent les mêmes car ils pointent vers des ressources statiques -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" th:href="@{/index.css}">
+</head>
+<body class="bg-light">
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center" th:href="@{/dashboard}">
+      <i class="bi bi-currency-exchange me-2"></i>
+      Flash Cash
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+          <a class="nav-link" th:href="@{/dashboard}">
+            <i class="bi bi-speedometer2"></i> Dashboard
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" th:href="@{/transactions}">
+            <i class="bi bi-arrow-left-right"></i> Transactions
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" th:href="@{/friends}">
+            <i class="bi bi-people"></i> Friends
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" th:href="@{/profile}">
+            <i class="bi bi-person"></i> Profile
+          </a>
+        </li>
+      </ul>
+      <form th:action="@{/logout}" method="post">
+        <button class="btn btn-outline-light" type="submit">
+          <i class="bi bi-box-arrow-right"></i> Sign Out
+        </button>
+      </form>
+    </div>
+  </div>
+</nav>
+
+<div class="container py-5">
+  <!-- Messages de notification -->
+  <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+    <i class="bi bi-check-circle me-2"></i>
+    <span th:text="${success}"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+
+  <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+    <i class="bi bi-exclamation-triangle me-2"></i>
+    <span th:text="${error}"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+
+  <!-- Welcome Section -->
+  <div class="card border-0 shadow-lg mb-4">
+    <div class="card-body p-4">
+      <div class="d-flex align-items-center">
+        <i class="bi bi-people-fill text-primary" style="font-size: 3rem;"></i>
+        <div class="ms-3">
+          <h4 class="mb-1">Manage Your Friends</h4>
+          <p class="text-muted mb-0">Send money easily to your trusted connections</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section des demandes d'amitié en attente -->
+  <div class="card border-0 shadow-lg mb-4" th:if="${not #lists.isEmpty(pendingRequests)}">
+    <div class="card-body p-4">
+      <h5 class="card-title mb-4">
+        <i class="bi bi-envelope"></i> Pending Friend Requests
+      </h5>
+      <div class="list-group">
+        <div th:each="request : ${pendingRequests}"
+             class="list-group-item d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="mb-1" th:text="${request.sourceAccount.user.firstName + ' ' +
+                                                      request.sourceAccount.user.lastName}">John Doe</h6>
+            <small class="text-muted" th:text="${request.sourceAccount.user.email}">
+              john@example.com
+            </small>
+          </div>
+          <div class="btn-group">
+            <form th:action="@{/friends/respond}" method="post" class="d-inline">
+              <input type="hidden" name="friendIban"
+                     th:value="${request.sourceAccount.iban}" />
+              <input type="hidden" name="accept" value="true" />
+              <button class="btn btn-success btn-sm">
+                <i class="bi bi-check-lg"></i> Accept
+              </button>
+            </form>
+            <form th:action="@{/friends/respond}" method="post" class="d-inline ms-2">
+              <input type="hidden" name="friendIban"
+                     th:value="${request.sourceAccount.iban}" />
+              <input type="hidden" name="accept" value="false" />
+              <button class="btn btn-danger btn-sm">
+                <i class="bi bi-x-lg"></i> Decline
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulaire d'ajout d'ami -->
+  <div class="card border-0 shadow-lg mb-4">
+    <div class="card-body p-4">
+      <h5 class="card-title mb-4">
+        <i class="bi bi-person-plus"></i> Add a Friend
+      </h5>
+      <form th:action="@{/friends/request}" method="post" class="needs-validation" novalidate>
+        <div class="form-floating mb-3">
+          <input type="email" class="form-control" id="friendEmail"
+                 name="friendEmail" placeholder="Friend's Email" required>
+          <label for="friendEmail">Friend's Email</label>
+          <div class="invalid-feedback">
+            Please enter a valid email address.
+          </div>
+        </div>
+        <div class="form-floating mb-4">
+          <input type="text" class="form-control" id="friendIban"
+                 name="friendIban" placeholder="Friend's IBAN" required>
+          <label for="friendIban">Friend's IBAN</label>
+          <div class="invalid-feedback">
+            Please enter a valid IBAN.
+          </div>
+        </div>
+        <div class="d-grid">
+          <button class="btn btn-primary" type="submit">
+            <i class="bi bi-plus-circle"></i> Send Friend Request
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Liste des amis -->
+  <div class="card border-0 shadow-lg">
+    <div class="card-body p-4">
+      <h5 class="card-title mb-4">
+        <i class="bi bi-people"></i> My Friends
+      </h5>
+      <div th:if="${#lists.isEmpty(friendAccounts)}" class="text-center py-5">
+        <i class="bi bi-people text-muted" style="font-size: 3rem;"></i>
+        <p class="text-muted mt-3">You haven't added any friends yet.</p>
+        <small class="text-muted">Start by sending a friend request!</small>
+      </div>
+      <div th:unless="${#lists.isEmpty(friendAccounts)}" class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>IBAN</th>
+            <th class="text-end">Actions</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="account : ${friendAccounts}">
+            <td>
+              <div class="d-flex align-items-center">
+                <i class="bi bi-person-circle me-2 text-primary"></i>
+                <span th:text="${account.user.firstName + ' ' + account.user.lastName}">
+                                            John Doe
+                                        </span>
+              </div>
+            </td>
+            <td th:text="${account.user.email}">john@example.com</td>
+            <td th:text="${account.iban}">FR76...</td>
+            <td class="text-end">
+              <div class="btn-group">
+                <a th:href="@{/transfer(to=${account.iban})}"
+                   class="btn btn-outline-primary btn-sm">
+                  <i class="bi bi-send"></i> Send Money
+                </a>
+                <form th:action="@{/friends/remove}" method="post" class="d-inline ms-2">
+                  <input type="hidden" name="friendIban" th:value="${account.iban}" />
+                  <button type="submit" class="btn btn-outline-danger btn-sm"
+                          onclick="return confirm('Are you sure you want to remove this friend?');">
+                    <i class="bi bi-person-x"></i> Remove
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="container">
+  <div class="text-center mt-4 mb-5">
+    <small class="text-muted">
+      &copy; 2024 Flash Cash. All rights reserved.
+    </small>
+  </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Validation du formulaire -->
+<script>
+  // Active la validation des formulaires Bootstrap
+  (function() {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms).forEach(function(form) {
+      form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+          event.preventDefault()
+          event.stopPropagation()
+        }
+        form.classList.add('was-validated')
+      }, false)
+    })
+  })()
+</script>
+</body>
+</html>
