@@ -16,12 +16,12 @@ import java.util.stream.Collectors;
 @Service
 public class FriendshipService {
 
-    // Déclaration des repositories nécessaires pour accéder aux données
+
     private final FriendshipRepository friendshipRepository;
     private final AccountRepository accountRepository;
     private final UserRepository userRepository;
 
-    // Constructeur avec injection des dépendances
+
     public FriendshipService(FriendshipRepository friendshipRepository,
                              AccountRepository accountRepository,
                              UserRepository userRepository) {
@@ -29,6 +29,37 @@ public class FriendshipService {
         this.accountRepository = accountRepository;
         this.userRepository = userRepository;
     }
+
+
+
+
+
+    public boolean areFriends(String userEmail, String friendEmail) {
+        // Récupération des utilisateurs
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+        User friend = userRepository.findByEmail(friendEmail)
+                .orElseThrow(() -> new RuntimeException("Ami non trouvé"));
+
+        // Récupération de leurs comptes principaux
+        Account userAccount = user.getAccounts().stream()
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Compte non trouvé pour l'utilisateur"));
+        Account friendAccount = friend.getAccounts().stream()
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Compte non trouvé pour l'ami"));
+
+        // Vérification de l'existence d'une amitié active dans les deux sens
+        boolean directFriendship = friendshipRepository
+                .existsBySourceAccountAndFriendAccountAndActiveIsTrue(userAccount, friendAccount);
+        boolean inverseFriendship = friendshipRepository
+                .existsBySourceAccountAndFriendAccountAndActiveIsTrue(friendAccount, userAccount);
+
+        return directFriendship || inverseFriendship;
+    }
+
+
+
 
     /**
      * Envoie une demande d'amitié à un autre utilisateur

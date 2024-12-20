@@ -7,11 +7,15 @@ import com.app.flashcash.entity.Friendship;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
+    // Vérifie si une relation active existe entre deux comptes
+    boolean existsBySourceAccountAndFriendAccountAndActiveIsTrue(Account sourceAccount, Account friendAccount);
 
     // Vérifier si une relation existe entre deux comptes
     boolean existsBySourceAccountAndFriendAccount(Account sourceAccount, Account friendAccount);
@@ -47,3 +51,4 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
             @Param("sourceId") Long sourceId,
             @Param("friendId") Long friendId);
 }
+

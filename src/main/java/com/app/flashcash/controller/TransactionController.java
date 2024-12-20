@@ -1,18 +1,20 @@
 package com.app.flashcash.controller;
 
-import com.app.flashcash.entity.Transaction;
+import com.app.flashcash.entity.Account;
+import com.app.flashcash.entity.User;
 import com.app.flashcash.service.AccountService;
+import com.app.flashcash.service.FriendshipService;
 import com.app.flashcash.service.TransactionService;
 import com.app.flashcash.service.UserService;
 import com.app.flashcash.service.dto.DepositDTO;
+import com.app.flashcash.service.dto.TransfertDTO;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
+import java.util.List;
 
 @Controller
 @RequestMapping("/transactions")
@@ -20,11 +22,15 @@ public class TransactionController {
 
     private TransactionService transactionService;
     private UserService userService;
+    private FriendshipService friendshipService;
+    private AccountService accountService;
 
 
-    public TransactionController(TransactionService transactionService, UserService userService) {
+    public TransactionController(TransactionService transactionService, UserService userService, FriendshipService friendshipService, AccountService accountService) {
         this.transactionService = transactionService;
         this.userService = userService;
+        this.friendshipService = friendshipService;
+        this.accountService = accountService;
     }
 
 
@@ -48,6 +54,71 @@ public class TransactionController {
             return "redirect:/transactions/deposit?error=" + e.getMessage();
         }
     }
+
+    @GetMapping("/transfer")
+    public String showTransferForm(Model model, Principal principal,@RequestParam(required = false) Long friendAccountId) {
+        String userEmail = principal.getName();
+        User currentUser = userService.getUserByEmail(userEmail);
+
+        // On récupère tous les comptes de l'utilisateur connecté
+        List<Account> userAccounts = currentUser.getAccounts();
+
+        // On récupère la liste des comptes amis grâce au FriendshipService
+        List<Account> friendAccounts = friendshipService.getFriendAccounts(userEmail);
+
+        // Ajout des données au modèle
+        model.addAttribute("user", currentUser);
+        model.addAttribute("userAccounts", userAccounts);
+        model.addAttribute("friendAccounts", friendAccounts); // Liste complète des comptes amis
+
+        // Si un compte ami est présélectionné
+        if (friendAccountId != null) {
+            // On pré-remplit avec l'ID du compte ami
+            model.addAttribute("selectedFriendAccountId", friendAccountId);
+        }
+
+        model.addAttribute("transferDTO", new TransfertDTO());
+
+        return "/transfert";
+    }
+
+    @PostMapping("/transfer")
+    public String processTransfer(@ModelAttribute TransfertDTO transferDTO,
+                                  Principal principal,
+                                  RedirectAttributes redirectAttributes) {
+        try {
+            // Récupération de l'utilisateur connecté pour la vérification
+            String userEmail = principal.getName();
+            User currentUser = userService.getUserByEmail(userEmail);
+
+            // Vérification que le compte source appartient bien à l'utilisateur connecté
+            Account sourceAccount = accountService.getAccountById(transferDTO.getSourceAccountId());
+            if (!sourceAccount.getUser().getId().equals(currentUser.getId())) {
+                throw new RuntimeException("Compte source non autorisé");
+            }
+
+            // Vérification que le compte destinataire est bien un ami
+            Account friendAccount = accountService.getAccountById(transferDTO.getFriendAccountId());
+            if (!friendshipService.areFriends(currentUser.getEmail(), friendAccount.getUser().getEmail())) {
+                throw new RuntimeException("Transfert non autorisé - Utilisateur non ami");
+            }
+
+            // Exécution du transfert via le service
+            transactionService.makeTransfer(transferDTO, userEmail);
+
+            // Message de succès
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Transfert de " + transferDTO.getAmount() + "€ effectué avec succès");
+
+            return "redirect:/dashboard";
+
+        } catch (RuntimeException e) {
+            // En cas d'erreur, on redirige vers le formulaire avec un message d'erreur
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/transactions/transfert";
+        }
+    }
+
 
 
 }
