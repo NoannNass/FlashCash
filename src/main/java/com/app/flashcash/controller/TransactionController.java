@@ -79,7 +79,7 @@ public class TransactionController {
 
         model.addAttribute("transferDTO", new TransfertDTO());
 
-        return "/transfert";
+        return "/transfer";
     }
 
     @PostMapping("/transfer")
@@ -115,7 +115,7 @@ public class TransactionController {
         } catch (RuntimeException e) {
             // En cas d'erreur, on redirige vers le formulaire avec un message d'erreur
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-            return "redirect:/transactions/transfert";
+            return "redirect:/transactions/transfer";
         }
     }
 
