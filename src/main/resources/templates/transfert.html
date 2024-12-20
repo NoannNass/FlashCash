@@ -23,7 +23,7 @@
         <i class="bi bi-send"></i> Effectuer un transfert
       </h4>
 
-      <form th:action="@{/transactions/transfer}" method="post" th:object="${transferDTO}">
+      <form th:action="@{/transactions/transfert}" method="post" th:object="${transferDTO}">
         <!-- Sélection du compte source -->
         <div class="form-floating mb-3">
           <select class="form-select" id="sourceAccountId" name="sourceAccountId" required>
