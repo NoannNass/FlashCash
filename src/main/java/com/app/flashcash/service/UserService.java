@@ -2,6 +2,7 @@ package com.app.flashcash.service;
 
 import com.app.flashcash.entity.Account;
 import com.app.flashcash.entity.User;
+import com.app.flashcash.repository.AccountRepository;
 import com.app.flashcash.repository.UserRepository;
 import com.app.flashcash.service.form.SignupForm;
 import jakarta.transaction.Transactional;
@@ -21,12 +22,27 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AccountRepository accountRepository;
 
     // Constructeur pour l'injection des dépendances
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, AccountRepository accountRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.accountRepository = accountRepository;
     }
+
+
+//    /**
+//     * Met à jour le solde d'un compte existant avec un montant spécifique
+//     */
+//    public void updateAccountBalance(String iban, BigDecimal newBalance) {
+//        Account account = accountRepository.findByIban(iban)
+//                .orElseThrow(() -> new RuntimeException("Compte non trouvé avec l'IBAN: " + iban));
+//
+//        account.setBalance(newBalance);
+//        accountRepository.save(account);
+//        System.out.println("✓ Solde mis à jour avec succès pour le compte : " + iban);
+//    }
 
     // Ajout de la méthode pour récupérer un utilisateur par email
     public User getUserByEmail(String email) {

@@ -5,6 +5,7 @@ import com.app.flashcash.entity.Account;
 import com.app.flashcash.entity.Transaction;
 import com.app.flashcash.repository.AccountRepository;
 import com.app.flashcash.repository.TransactionRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -19,6 +20,29 @@ public class AccountService {
         this.accountRepository = accountRepository;
         this.transactionRepository = transactionRepository;
     }
+    /**
+     * Initialise le solde d'un compte avec un montant donné
+     *
+     * @param iban L'IBAN du compte à initialiser
+     * @param initialAmount Le montant initial à placer sur le compte
+     * @return Le compte mis à jour
+     */
+    @Transactional
+    public Account initializeAccountBalance(String iban, BigDecimal initialAmount) {
+        // Recherche du compte
+        Account account = accountRepository.findByIban(iban)
+                .orElseThrow(() -> new IllegalArgumentException("Compte non trouvé : " + iban));
+
+        // Définition du solde initial
+        account.setBalance(initialAmount);
+
+        // Sauvegarde et retour du compte mis à jour
+        return accountRepository.save(account);
+    }
+
+
+
+
 
     public void makeTransfer(Account sourceAccount, Account destinationAccount, BigDecimal amount) {
 
