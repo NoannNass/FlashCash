@@ -45,12 +45,11 @@ public class FriendsController {
     @PostMapping("/request")
     public String sendFriendRequest(
             @RequestParam String friendEmail,
-            @RequestParam String friendIban,
             Principal principal,
             RedirectAttributes redirectAttributes) {
 
         try {
-            friendshipService.sendFriendRequest(principal.getName(), friendEmail, friendIban);
+            friendshipService.sendFriendRequest(principal.getName(), friendEmail);
             redirectAttributes.addFlashAttribute("success",
                     "Demande d'ami envoyée avec succès ! En attente d'acceptation.");
         } catch (IllegalArgumentException e) {

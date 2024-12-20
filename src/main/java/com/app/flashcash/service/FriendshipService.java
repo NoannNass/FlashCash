@@ -34,11 +34,11 @@ public class FriendshipService {
      * Envoie une demande d'amitié à un autre utilisateur
      * @param currentUserEmail email de l'utilisateur qui envoie la demande
      * @param friendEmail email de l'ami potentiel
-     * @param friendIban IBAN du compte de l'ami potentiel
+
      * @return l'entité Friendship créée
      */
     @Transactional
-    public Friendship sendFriendRequest(String currentUserEmail, String friendEmail, String friendIban) {
+    public Friendship sendFriendRequest(String currentUserEmail, String friendEmail) {
         // Récupération de l'utilisateur qui envoie la demande
         User currentUser = userRepository.findByEmail(currentUserEmail)
                 .orElseThrow(() -> new IllegalArgumentException("Utilisateur demandeur introuvable"));
@@ -48,17 +48,16 @@ public class FriendshipService {
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("L'utilisateur n'a pas de compte"));
 
-        // Vérification et récupération du compte de l'ami potentiel
-        Account friendAccount = accountRepository.findByIban(friendIban)
-                .orElseThrow(() -> new IllegalArgumentException("Compte avec IBAN " + friendIban + " introuvable"));
+        // Récupération de l'utilisateur ami et de son compte principal
+        User friendUser = userRepository.findByEmail(friendEmail)
+                .orElseThrow(() -> new IllegalArgumentException("Utilisateur ami introuvable"));
 
-        // Vérification que l'IBAN correspond bien à l'email fourni
-        if (!friendAccount.getUser().getEmail().equals(friendEmail)) {
-            throw new IllegalArgumentException("L'IBAN ne correspond pas à l'utilisateur spécifié");
-        }
+        Account friendAccount = friendUser.getAccounts().stream()
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("L'utilisateur ami n'a pas de compte"));
 
         // Empêcher d'ajouter son propre compte
-        if (currentUser.getId().equals(friendAccount.getUser().getId())) {
+        if (currentUser.getId().equals(friendUser.getId())) {
             throw new IllegalArgumentException("Impossible d'envoyer une demande d'ami à soi-même");
         }
 
